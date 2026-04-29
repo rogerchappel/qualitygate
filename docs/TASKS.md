@@ -24,34 +24,32 @@ Medium
 
 Source: llm (openai:gpt-4.1-mini)
 
-The CLI should be local-first and run a series of safe checks in order, emitting reports and exiting with appropriate codes.
+The CLI should provide a command `qualitygate run` that triggers the detection and execution of repo scripts for verification.
 
 ## Allowed Paths
 
-- cli/
-- src/
+- cli/**
+- src/**
 - package.json
 - README.md
 
 ## Forbidden Paths
 
-- ci/
-- scripts/auto-fix.sh
+- ci/**
+- docs/**
 
 ## Expected Commits
 
-- feat(cli): add `qualitygate run` command entrypoint
-- test(cli): add tests for CLI command
+- feat(cli): add `qualitygate run` command entry point
 
 ## Verification
 
-- Run `qualitygate run` on fixture packages and verify correct exit codes
+- Run `qualitygate run` on fixture packages and verify correct execution flow
 - Check CLI help output includes `qualitygate run`
 
 ## Stop Conditions
 
-- CLI command runs without errors
-- Exit code is non-zero if required checks fail
+- `qualitygate run` command is implemented and passes basic smoke tests
 
 ## Review Pack Required
 
@@ -63,7 +61,7 @@ Yes.
 
 ## Agent Prompt
 
-Implement the main CLI command `qualitygate run` that orchestrates the quality gate checks in order.
+Implement the CLI command `qualitygate run` as the main entry point for the quality gate tool.
 
 ---
 
@@ -71,7 +69,7 @@ Implement the main CLI command `qualitygate run` that orchestrates the quality g
 
 ## Objective
 
-Automatically detect the package manager and scripts available in the repository
+Implement detection logic for package manager and scripts in the repo
 
 ## Repository
 
@@ -93,31 +91,30 @@ Medium
 
 Source: llm (openai:gpt-4.1-mini)
 
-Detection is needed to know which checks to run (lint, typecheck, test, build) based on scripts present.
+The tool must detect which package manager is used (npm, yarn, pnpm) and identify available scripts like lint, typecheck, test, and build.
 
 ## Allowed Paths
 
-- src/detection/
+- src/detection/**
 - package.json
 
 ## Forbidden Paths
 
-- ci/
-- scripts/
+- ci/**
+- docs/**
 
 ## Expected Commits
 
-- feat(detection): add package manager and script detection logic
-- test(detection): add tests for detection module
+- feat(detection): add package manager and script detection
 
 ## Verification
 
-- Verify detection works on fixture packages with different package managers
-- Confirm scripts detected match those in package.json
+- Test detection on fixture packages with different package managers
+- Verify scripts detection matches expected scripts in package.json
 
 ## Stop Conditions
 
-- Detection correctly identifies package manager and scripts
+- Detection logic correctly identifies package manager and scripts in test fixtures
 
 ## Review Pack Required
 
@@ -129,7 +126,7 @@ Yes.
 
 ## Agent Prompt
 
-Implement package manager and script detection to identify which checks can be run.
+Implement detection of package manager and available scripts in the repository.
 
 ---
 
@@ -137,7 +134,7 @@ Implement package manager and script detection to identify which checks can be r
 
 ## Objective
 
-Execute the detected scripts in a safe order and capture results
+Execute detected scripts in a safe, ordered manner and capture results
 
 ## Repository
 
@@ -159,31 +156,30 @@ High
 
 Source: llm (openai:gpt-4.1-mini)
 
-Checks must run sequentially if present, capturing command, exit code, duration, and summary.
+Run the scripts lint, typecheck, test, and build if present, in that order, capturing command, exit code, duration, and summary. Exit non-zero if required checks fail.
 
 ## Allowed Paths
 
-- src/checks/
-- src/utils/
+- src/execution/**
+- src/reporting/**
 
 ## Forbidden Paths
 
-- scripts/auto-fix.sh
-- ci/
+- ci/**
+- docs/**
 
 ## Expected Commits
 
-- feat(checks): implement sequential execution of lint, typecheck, test, build
-- test(checks): add tests for check execution and result capturing
+- feat(execution): run lint, typecheck, test, build scripts in order with result capture
 
 ## Verification
 
-- Run checks on fixture packages and verify correct execution order
-- Confirm exit codes and durations are captured accurately
+- Run checks on fixture packages with passing and failing scripts
+- Verify exit codes reflect failures in required checks
 
 ## Stop Conditions
 
-- All present checks run in order without destructive side effects
+- All checks run in order with correct result capture and exit code behavior
 
 ## Review Pack Required
 
@@ -195,15 +191,15 @@ Yes.
 
 ## Agent Prompt
 
-Implement running of safe checks in order: lint, typecheck, test, build, capturing all relevant data.
+Implement execution of safe checks in order: lint, typecheck, test, build, capturing results and enforcing exit codes.
 
 ---
 
-# Task Brief: Emit `QUALITY_REPORT.md` and JSON report
+# Task Brief: Emit QUALITY_REPORT.md and JSON report
 
 ## Objective
 
-Generate human-readable and machine-readable reports summarizing check results
+Generate Markdown and JSON reports summarizing the quality gate run
 
 ## Repository
 
@@ -225,31 +221,31 @@ Medium
 
 Source: llm (openai:gpt-4.1-mini)
 
-Reports must include command run, exit code, duration, and summary for each check.
+After running checks, emit a `QUALITY_REPORT.md` and a JSON report capturing command, exit code, duration, and summary for each check.
 
 ## Allowed Paths
 
-- src/reporting/
+- src/reporting/**
 - QUALITY_REPORT.md
+- reports/**
 
 ## Forbidden Paths
 
-- ci/
-- scripts/
+- ci/**
+- docs/**
 
 ## Expected Commits
 
 - feat(reporting): add Markdown and JSON report generation
-- test(reporting): add tests for report output
 
 ## Verification
 
-- Verify generated Markdown and JSON reports match expected schema
-- Test report generation on fixture packages
+- Verify generated QUALITY_REPORT.md matches expected format
+- Validate JSON report schema against test fixtures
 
 ## Stop Conditions
 
-- Reports are generated correctly after checks complete
+- Reports are generated correctly and pass schema validation
 
 ## Review Pack Required
 
@@ -261,15 +257,15 @@ Yes.
 
 ## Agent Prompt
 
-Implement report generation emitting QUALITY_REPORT.md and JSON summarizing check results.
+Implement generation of QUALITY_REPORT.md and JSON reports summarizing the quality gate results.
 
 ---
 
-# Task Brief: Exit with non-zero code if required checks fail
+# Task Brief: Create fixture packages with pass/fail scripts for testing
 
 ## Objective
 
-Ensure CLI exits with failure code if any required check fails
+Provide fixture packages to test passing and failing script scenarios
 
 ## Repository
 
@@ -277,136 +273,7 @@ qualitygate
 
 ## Suggested Branch
 
-agent/exit-with-non-zero-code-if-required-checks-fail
-
-## Task Type
-
-feature
-
-## Risk Level
-
-Medium
-
-## Context
-
-Source: llm (openai:gpt-4.1-mini)
-
-This is critical to prevent handoff if quality gate is not passed.
-
-## Allowed Paths
-
-- cli/
-- src/
-
-## Forbidden Paths
-
-- ci/
-- scripts/
-
-## Expected Commits
-
-- fix(cli): set exit code based on check results
-- test(cli): add tests for exit code behavior
-
-## Verification
-
-- Run CLI on failing fixture and verify non-zero exit code
-- Run CLI on passing fixture and verify zero exit code
-
-## Stop Conditions
-
-- Exit codes reflect pass/fail status of required checks
-
-## Review Pack Required
-
-Yes.
-
-## Human Decision Needed
-
-- None
-
-## Agent Prompt
-
-Implement exit code logic to fail CLI if required checks fail.
-
----
-
-# Task Brief: Add fixture packages with pass/fail scripts for testing
-
-## Objective
-
-Provide test fixtures with scripts that pass and fail to verify behavior
-
-## Repository
-
-qualitygate
-
-## Suggested Branch
-
-agent/add-fixture-packages-with-pass-fail-scripts-for-testing
-
-## Task Type
-
-chore
-
-## Risk Level
-
-Low
-
-## Context
-
-Source: llm (openai:gpt-4.1-mini)
-
-Fixtures are needed to verify detection, execution, and reporting.
-
-## Allowed Paths
-
-- fixtures/
-
-## Forbidden Paths
-
-- src/
-- ci/
-
-## Expected Commits
-
-- test(fixtures): add pass and fail script fixtures
-
-## Verification
-
-- Fixtures contain scripts for lint, typecheck, test, build with pass and fail variants
-
-## Stop Conditions
-
-- Fixtures are available and used in tests
-
-## Review Pack Required
-
-No.
-
-## Human Decision Needed
-
-- None
-
-## Agent Prompt
-
-Add fixture packages with scripts that pass and fail for testing purposes.
-
----
-
-# Task Brief: Add tests for JSON report schema validation
-
-## Objective
-
-Validate JSON report output matches expected schema
-
-## Repository
-
-qualitygate
-
-## Suggested Branch
-
-agent/add-tests-for-json-report-schema-validation
+agent/create-fixture-packages-with-pass-fail-scripts-for-testing
 
 ## Task Type
 
@@ -420,29 +287,92 @@ Low
 
 Source: llm (openai:gpt-4.1-mini)
 
-Ensures report consumers can rely on consistent JSON format.
+Fixtures are needed to verify detection, execution, and reporting of the quality gate tool.
 
 ## Allowed Paths
 
-- tests/
-- src/reporting/
+- tests/fixtures/**
 
 ## Forbidden Paths
 
-- ci/
-- scripts/
+- src/**
+- ci/**
 
 ## Expected Commits
 
-- test(reporting): add JSON schema validation tests
+- test(fixtures): add fixture packages with pass and fail scripts
 
 ## Verification
 
-- Tests validate JSON schema against generated reports
+- Fixtures include scripts that pass and fail for lint, typecheck, test, build
 
 ## Stop Conditions
 
-- JSON report schema tests pass
+- Fixtures are created and usable in automated tests
+
+## Review Pack Required
+
+No.
+
+## Human Decision Needed
+
+- None
+
+## Agent Prompt
+
+Create fixture packages with scripts that pass and fail to support testing.
+
+---
+
+# Task Brief: Test JSON report schema validation
+
+## Objective
+
+Implement tests to validate the JSON report schema
+
+## Repository
+
+qualitygate
+
+## Suggested Branch
+
+agent/test-json-report-schema-validation
+
+## Task Type
+
+test
+
+## Risk Level
+
+Low
+
+## Context
+
+Source: llm (openai:gpt-4.1-mini)
+
+Ensure the JSON report emitted by the tool conforms to the expected schema using automated tests.
+
+## Allowed Paths
+
+- tests/**
+- src/reporting/**
+
+## Forbidden Paths
+
+- ci/**
+- docs/**
+
+## Expected Commits
+
+- test(reporting): add JSON report schema validation tests
+
+## Verification
+
+- Run automated tests validating JSON report schema against fixtures
+
+## Stop Conditions
+
+- JSON report schema validation tests pass reliably
 
 ## Review Pack Required
 
@@ -454,15 +384,15 @@ Yes.
 
 ## Agent Prompt
 
-Add tests to validate JSON report schema correctness.
+Implement automated tests to validate the JSON report schema.
 
 ---
 
-# Task Brief: Write README with usage, config, and example GitHub Actions
+# Task Brief: Write README documentation
 
 ## Objective
 
-Document CLI usage, configuration options, and provide example GitHub Actions workflow
+Document usage, installation, and features of qualitygate
 
 ## Repository
 
@@ -470,7 +400,7 @@ qualitygate
 
 ## Suggested Branch
 
-agent/write-readme-with-usage-config-and-example-github-actions
+agent/write-readme-documentation
 
 ## Task Type
 
@@ -484,25 +414,25 @@ Low
 
 Source: llm (openai:gpt-4.1-mini)
 
-Good documentation is needed for adoption and clarity.
+Provide clear README including CLI usage, configuration, and example outputs.
 
 ## Allowed Paths
 
 - README.md
-- docs/
+- docs/**
 
 ## Forbidden Paths
 
-- src/
-- ci/
+- src/**
+- tests/**
 
 ## Expected Commits
 
-- docs: add README with usage, config, and GitHub Actions example
+- docs: add README with usage and feature documentation
 
 ## Verification
 
-- README includes usage instructions, config details, and GitHub Actions example
+- README includes usage examples and explanation of qualitygate features
 
 ## Stop Conditions
 
@@ -518,4 +448,67 @@ Yes.
 
 ## Agent Prompt
 
-Write comprehensive README including usage, configuration, and GitHub Actions example.
+Write comprehensive README documentation for qualitygate CLI tool.
+
+---
+
+# Task Brief: Add GitHub Actions example workflow
+
+## Objective
+
+Provide example GitHub Actions workflow integrating qualitygate
+
+## Repository
+
+qualitygate
+
+## Suggested Branch
+
+agent/add-github-actions-example-workflow
+
+## Task Type
+
+feature
+
+## Risk Level
+
+Low
+
+## Context
+
+Source: llm (openai:gpt-4.1-mini)
+
+Show how to run qualitygate in a GitHub Actions CI environment as an example for users.
+
+## Allowed Paths
+
+- .github/workflows/**
+
+## Forbidden Paths
+
+- src/**
+- tests/**
+
+## Expected Commits
+
+- ci: add GitHub Actions example workflow for qualitygate
+
+## Verification
+
+- GitHub Actions workflow runs qualitygate and reports results
+
+## Stop Conditions
+
+- Example workflow is added and tested
+
+## Review Pack Required
+
+Yes.
+
+## Human Decision Needed
+
+- None
+
+## Agent Prompt
+
+Add an example GitHub Actions workflow demonstrating qualitygate usage.
