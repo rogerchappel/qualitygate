@@ -3,17 +3,17 @@
   "source": "taskbrief-orchestration",
   "workspace": "default",
   "repo": "qualitygate",
-  "generated_from": "taskbrief",
+  "generated_from": "taskbrief + llm-orchestration (openai:gpt-4.1-mini)",
   "summary": {
-    "total_tasks": 8,
+    "total_tasks": 9,
     "dispatchable_now": [
       "qualitygate-detect-package-manager-and-available-scripts"
     ],
     "blocked_tasks": [
-      "qualitygate-run-safe-checks-in-order-lint-typecheck-test-build"
+      "qualitygate-run-safe-checks-in-order-if-present-lint-typecheck-test-build"
     ],
     "final_validation_task_ids": [
-      "qualitygate-run-safe-checks-in-order-lint-typecheck-test-build"
+      "qualitygate-run-safe-checks-in-order-if-present-lint-typecheck-test-build"
     ]
   },
   "waves": [
@@ -33,7 +33,8 @@
       "dispatch": "after_dependencies",
       "task_ids": [
         "qualitygate-implement-cli-command-qualitygate-run",
-        "qualitygate-emit-quality-report-md-and-json-report"
+        "qualitygate-emit-quality-report-md-and-json-report",
+        "qualitygate-exit-non-zero-if-required-checks-fail"
       ]
     },
     {
@@ -42,8 +43,8 @@
       "mode": "concurrent",
       "dispatch": "after_dependencies",
       "task_ids": [
-        "qualitygate-create-fixture-packages-with-pass-fail-scripts-for-testing",
-        "qualitygate-test-json-report-schema-validation"
+        "qualitygate-add-fixture-packages-with-pass-fail-scripts-for-testing",
+        "qualitygate-test-json-report-schema"
       ]
     },
     {
@@ -62,7 +63,7 @@
       "mode": "sequential",
       "dispatch": "after_human_decision",
       "task_ids": [
-        "qualitygate-run-safe-checks-in-order-lint-typecheck-test-build"
+        "qualitygate-run-safe-checks-in-order-if-present-lint-typecheck-test-build"
       ]
     }
   ],
@@ -81,7 +82,7 @@
       "blocked_by": [],
       "verification": [
         "Test detection on fixture packages with different package managers",
-        "Verify scripts detection matches expected scripts in package.json"
+        "Verify scripts lint, typecheck, test, build are correctly identified if present"
       ]
     },
     {
@@ -96,7 +97,8 @@
         "qualitygate-detect-package-manager-and-available-scripts"
       ],
       "can_run_concurrently_with": [
-        "qualitygate-emit-quality-report-md-and-json-report"
+        "qualitygate-emit-quality-report-md-and-json-report",
+        "qualitygate-exit-non-zero-if-required-checks-fail"
       ],
       "dispatchable": false,
       "blocked_by": [],
@@ -107,7 +109,7 @@
     },
     {
       "id": "qualitygate-emit-quality-report-md-and-json-report",
-      "title": "Emit QUALITY_REPORT.md and JSON report",
+      "title": "Emit `QUALITY_REPORT.md` and JSON report",
       "repo": "qualitygate",
       "branch": "agent/emit-quality-report-md-and-json-report",
       "type": "feature",
@@ -117,57 +119,83 @@
         "qualitygate-detect-package-manager-and-available-scripts"
       ],
       "can_run_concurrently_with": [
-        "qualitygate-implement-cli-command-qualitygate-run"
+        "qualitygate-implement-cli-command-qualitygate-run",
+        "qualitygate-exit-non-zero-if-required-checks-fail"
       ],
       "dispatchable": false,
       "blocked_by": [],
       "verification": [
-        "Verify generated QUALITY_REPORT.md matches expected format",
-        "Validate JSON report schema against test fixtures"
+        "Verify `QUALITY_REPORT.md` is generated with correct content",
+        "Validate JSON report schema against expected format"
       ]
     },
     {
-      "id": "qualitygate-create-fixture-packages-with-pass-fail-scripts-for-testing",
-      "title": "Create fixture packages with pass/fail scripts for testing",
+      "id": "qualitygate-exit-non-zero-if-required-checks-fail",
+      "title": "Exit non-zero if required checks fail",
       "repo": "qualitygate",
-      "branch": "agent/create-fixture-packages-with-pass-fail-scripts-for-testing",
+      "branch": "agent/exit-non-zero-if-required-checks-fail",
+      "type": "feature",
+      "risk": "medium",
+      "phase": "implementation",
+      "depends_on": [
+        "qualitygate-detect-package-manager-and-available-scripts"
+      ],
+      "can_run_concurrently_with": [
+        "qualitygate-implement-cli-command-qualitygate-run",
+        "qualitygate-emit-quality-report-md-and-json-report"
+      ],
+      "dispatchable": false,
+      "blocked_by": [],
+      "verification": [
+        "Run CLI with failing checks and verify non-zero exit code",
+        "Run CLI with all passing checks and verify zero exit code"
+      ]
+    },
+    {
+      "id": "qualitygate-add-fixture-packages-with-pass-fail-scripts-for-testing",
+      "title": "Add fixture packages with pass/fail scripts for testing",
+      "repo": "qualitygate",
+      "branch": "agent/add-fixture-packages-with-pass-fail-scripts-for-testing",
       "type": "test",
       "risk": "low",
       "phase": "verification",
       "depends_on": [
         "qualitygate-detect-package-manager-and-available-scripts",
         "qualitygate-implement-cli-command-qualitygate-run",
-        "qualitygate-emit-quality-report-md-and-json-report"
+        "qualitygate-emit-quality-report-md-and-json-report",
+        "qualitygate-exit-non-zero-if-required-checks-fail"
       ],
       "can_run_concurrently_with": [
-        "qualitygate-test-json-report-schema-validation"
+        "qualitygate-test-json-report-schema"
       ],
       "dispatchable": false,
       "blocked_by": [],
       "verification": [
-        "Fixtures include scripts that pass and fail for lint, typecheck, test, build"
+        "Fixtures contain scripts that reliably pass or fail",
+        "Fixtures are used in automated tests"
       ]
     },
     {
-      "id": "qualitygate-test-json-report-schema-validation",
-      "title": "Test JSON report schema validation",
+      "id": "qualitygate-test-json-report-schema",
+      "title": "Test JSON report schema",
       "repo": "qualitygate",
-      "branch": "agent/test-json-report-schema-validation",
+      "branch": "agent/test-json-report-schema",
       "type": "test",
       "risk": "low",
       "phase": "verification",
       "depends_on": [
         "qualitygate-detect-package-manager-and-available-scripts",
         "qualitygate-implement-cli-command-qualitygate-run",
-        "qualitygate-emit-quality-report-md-and-json-report"
+        "qualitygate-emit-quality-report-md-and-json-report",
+        "qualitygate-exit-non-zero-if-required-checks-fail"
       ],
       "can_run_concurrently_with": [
-        "qualitygate-create-fixture-packages-with-pass-fail-scripts-for-testing"
+        "qualitygate-add-fixture-packages-with-pass-fail-scripts-for-testing"
       ],
       "dispatchable": false,
       "blocked_by": [],
       "verification": [
-        "Run automated tests validating JSON report schema against fixtures"
+        "Tests validate JSON report schema against expected format"
       ]
     },
     {
@@ -182,8 +210,9 @@
         "qualitygate-detect-package-manager-and-available-scripts",
         "qualitygate-implement-cli-command-qualitygate-run",
         "qualitygate-emit-quality-report-md-and-json-report",
-        "qualitygate-create-fixture-packages-with-pass-fail-scripts-for-testing",
-        "qualitygate-test-json-report-schema-validation"
+        "qualitygate-exit-non-zero-if-required-checks-fail",
+        "qualitygate-add-fixture-packages-with-pass-fail-scripts-for-testing",
+        "qualitygate-test-json-report-schema"
       ],
       "can_run_concurrently_with": [
         "qualitygate-add-github-actions-example-workflow"
@@ -191,7 +220,8 @@
       "dispatchable": false,
       "blocked_by": [],
       "verification": [
-        "README includes usage examples and explanation of qualitygate features"
+        "README covers all key features and usage instructions",
+        "README is clear and free of errors"
       ]
     },
     {
@@ -206,8 +236,9 @@
         "qualitygate-detect-package-manager-and-available-scripts",
         "qualitygate-implement-cli-command-qualitygate-run",
         "qualitygate-emit-quality-report-md-and-json-report",
-        "qualitygate-create-fixture-packages-with-pass-fail-scripts-for-testing",
-        "qualitygate-test-json-report-schema-validation"
+        "qualitygate-exit-non-zero-if-required-checks-fail",
+        "qualitygate-add-fixture-packages-with-pass-fail-scripts-for-testing",
+        "qualitygate-test-json-report-schema"
       ],
       "can_run_concurrently_with": [
         "qualitygate-write-readme-documentation"
@@ -215,14 +246,15 @@
       "dispatchable": false,
       "blocked_by": [],
       "verification": [
-        "GitHub Actions workflow runs qualitygate and reports results"
+        "Example workflow runs successfully in GitHub Actions",
+        "Workflow demonstrates running `qualitygate run` and handling results"
       ]
     },
     {
-      "id": "qualitygate-run-safe-checks-in-order-lint-typecheck-test-build",
-      "title": "Run safe checks in order: lint, typecheck, test, build",
+      "id": "qualitygate-run-safe-checks-in-order-if-present-lint-typecheck-test-build",
+      "title": "Run safe checks in order if present: lint, typecheck, test, build",
       "repo": "qualitygate",
-      "branch": "agent/run-safe-checks-in-order-lint-typecheck-test-build",
+      "branch": "agent/run-safe-checks-in-order-if-present-lint-typecheck-test-build",
       "type": "feature",
       "risk": "high",
       "phase": "final_validation",
@@ -230,8 +262,9 @@
         "qualitygate-detect-package-manager-and-available-scripts",
         "qualitygate-implement-cli-command-qualitygate-run",
         "qualitygate-emit-quality-report-md-and-json-report",
-        "qualitygate-create-fixture-packages-with-pass-fail-scripts-for-testing",
-        "qualitygate-test-json-report-schema-validation",
+        "qualitygate-exit-non-zero-if-required-checks-fail",
+        "qualitygate-add-fixture-packages-with-pass-fail-scripts-for-testing",
+        "qualitygate-test-json-report-schema",
         "qualitygate-write-readme-documentation",
         "qualitygate-add-github-actions-example-workflow"
       ],
@@ -241,10 +274,17 @@
         "approve high-risk scope before dispatch"
       ],
       "verification": [
-        "Run checks on fixture packages with passing and failing scripts",
-        "Verify exit codes reflect failures in required checks"
+        "Run the CLI on fixture packages and verify each script runs in order",
+        "Check captured command, exit code, duration, and summary are accurate"
       ]
     }
   ],
-  "dispatch_prompt": "Dispatch Wave 1 first. These tasks may run concurrently:\n- qualitygate-detect-package-manager-and-available-scripts\nWait for the whole wave to finish and pass verification before dispatching the next sequential wave."
+  "dispatch_prompt": "Dispatch Wave 1 first. These tasks may run concurrently:\n- qualitygate-detect-package-manager-and-available-scripts\nWait for the whole wave to finish and pass verification before dispatching the next sequential wave.",
+  "refinement_notes": [
+    "The detection task must run first as it is a prerequisite for all implementation tasks.",
+    "Implementation tasks depend on detection and can run concurrently as they do not depend on each other.",
+    "Verification tasks depend on all implementation tasks and can run concurrently since they test different aspects.",
+    "Documentation tasks depend on all verification tasks and can run concurrently as they cover different documentation aspects.",
+    "The final validation task depends on all previous tasks and is high risk, requiring human decision before dispatch, so it is placed last and sequential."
+  ]
 }

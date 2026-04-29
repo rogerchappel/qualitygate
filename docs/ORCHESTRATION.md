@@ -4,16 +4,24 @@
 
 - Workspace: default
 - Repository: qualitygate
-- Source: taskbrief
-- Total tasks: 8
+- Source: taskbrief + llm-orchestration (openai:gpt-4.1-mini)
+- Total tasks: 9
 - Dispatch now: qualitygate-detect-package-manager-and-available-scripts
-- Blocked tasks: qualitygate-run-safe-checks-in-order-lint-typecheck-test-build
+- Blocked tasks: qualitygate-run-safe-checks-in-order-if-present-lint-typecheck-test-build
 
 ## Dispatch Prompt
 
 Dispatch Wave 1 first. These tasks may run concurrently:
 - qualitygate-detect-package-manager-and-available-scripts
 Wait for the whole wave to finish and pass verification before dispatching the next sequential wave.
+
+## LLM Refinement Notes
+
+- The detection task must run first as it is a prerequisite for all implementation tasks.
+- Implementation tasks depend on detection and can run concurrently as they do not depend on each other.
+- Verification tasks depend on all implementation tasks and can run concurrently since they test different aspects.
+- Documentation tasks depend on all verification tasks and can run concurrently as they cover different documentation aspects.
+- The final validation task depends on all previous tasks and is high risk, requiring human decision before dispatch, so it is placed last and sequential.
 
 ## Sequential Waves
 
@@ -27,13 +35,13 @@ Wait for the whole wave to finish and pass verification before dispatching the n
 
 - Mode inside wave: concurrent
 - Dispatch: after_dependencies
-- Tasks: qualitygate-implement-cli-command-qualitygate-run, qualitygate-emit-quality-report-md-and-json-report
+- Tasks: qualitygate-implement-cli-command-qualitygate-run, qualitygate-emit-quality-report-md-and-json-report, qualitygate-exit-non-zero-if-required-checks-fail
 
 ### Wave 3: Verification / tests
 
 - Mode inside wave: concurrent
 - Dispatch: after_dependencies
-- Tasks: qualitygate-create-fixture-packages-with-pass-fail-scripts-for-testing, qualitygate-test-json-report-schema-validation
+- Tasks: qualitygate-add-fixture-packages-with-pass-fail-scripts-for-testing, qualitygate-test-json-report-schema
 
 ### Wave 4: Documentation / examples
 
@@ -45,7 +53,7 @@ Wait for the whole wave to finish and pass verification before dispatching the n
 
 - Mode inside wave: sequential
 - Dispatch: after_human_decision
-- Tasks: qualitygate-run-safe-checks-in-order-lint-typecheck-test-build
+- Tasks: qualitygate-run-safe-checks-in-order-if-present-lint-typecheck-test-build
 
 ## Task Dependencies
 
@@ -67,40 +75,51 @@ Wait for the whole wave to finish and pass verification before dispatching the n
 - Branch: agent/implement-cli-command-qualitygate-run
 - Risk: medium
 - Depends on: qualitygate-detect-package-manager-and-available-scripts
-- Can run concurrently with: qualitygate-emit-quality-report-md-and-json-report
+- Can run concurrently with: qualitygate-emit-quality-report-md-and-json-report, qualitygate-exit-non-zero-if-required-checks-fail
 - Dispatchable now: No
 - Blocked by: None
 
-### qualitygate-emit-quality-report-md-and-json-report: Emit QUALITY_REPORT.md and JSON report
+### qualitygate-emit-quality-report-md-and-json-report: Emit `QUALITY_REPORT.md` and JSON report
 
 - Phase: implementation
 - Repo: qualitygate
 - Branch: agent/emit-quality-report-md-and-json-report
 - Risk: medium
 - Depends on: qualitygate-detect-package-manager-and-available-scripts
-- Can run concurrently with: qualitygate-implement-cli-command-qualitygate-run
+- Can run concurrently with: qualitygate-implement-cli-command-qualitygate-run, qualitygate-exit-non-zero-if-required-checks-fail
 - Dispatchable now: No
 - Blocked by: None
 
-### qualitygate-create-fixture-packages-with-pass-fail-scripts-for-testing: Create fixture packages with pass/fail scripts for testing
+### qualitygate-exit-non-zero-if-required-checks-fail: Exit non-zero if required checks fail
 
-- Phase: verification
+- Phase: implementation
 - Repo: qualitygate
-- Branch: agent/create-fixture-packages-with-pass-fail-scripts-for-testing
-- Risk: low
-- Depends on: qualitygate-detect-package-manager-and-available-scripts, qualitygate-implement-cli-command-qualitygate-run, qualitygate-emit-quality-report-md-and-json-report
-- Can run concurrently with: qualitygate-test-json-report-schema-validation
+- Branch: agent/exit-non-zero-if-required-checks-fail
+- Risk: medium
+- Depends on: qualitygate-detect-package-manager-and-available-scripts
+- Can run concurrently with: qualitygate-implement-cli-command-qualitygate-run, qualitygate-emit-quality-report-md-and-json-report
 - Dispatchable now: No
 - Blocked by: None
 
-### qualitygate-test-json-report-schema-validation: Test JSON report schema validation
+### qualitygate-add-fixture-packages-with-pass-fail-scripts-for-testing: Add fixture packages with pass/fail scripts for testing
 
 - Phase: verification
 - Repo: qualitygate
-- Branch: agent/test-json-report-schema-validation
+- Branch: agent/add-fixture-packages-with-pass-fail-scripts-for-testing
 - Risk: low
-- Depends on: qualitygate-detect-package-manager-and-available-scripts, qualitygate-implement-cli-command-qualitygate-run, qualitygate-emit-quality-report-md-and-json-report
-- Can run concurrently with: qualitygate-create-fixture-packages-with-pass-fail-scripts-for-testing
+- Depends on: qualitygate-detect-package-manager-and-available-scripts, qualitygate-implement-cli-command-qualitygate-run, qualitygate-emit-quality-report-md-and-json-report, qualitygate-exit-non-zero-if-required-checks-fail
+- Can run concurrently with: qualitygate-test-json-report-schema
+- Dispatchable now: No
+- Blocked by: None
+
+### qualitygate-test-json-report-schema: Test JSON report schema
+
+- Phase: verification
+- Repo: qualitygate
+- Branch: agent/test-json-report-schema
+- Risk: low
+- Depends on: qualitygate-detect-package-manager-and-available-scripts, qualitygate-implement-cli-command-qualitygate-run, qualitygate-emit-quality-report-md-and-json-report, qualitygate-exit-non-zero-if-required-checks-fail
+- Can run concurrently with: qualitygate-add-fixture-packages-with-pass-fail-scripts-for-testing
 - Dispatchable now: No
 - Blocked by: None
 
@@ -110,7 +129,7 @@ Wait for the whole wave to finish and pass verification before dispatching the n
 - Repo: qualitygate
 - Branch: agent/write-readme-documentation
 - Risk: low
-- Depends on: qualitygate-detect-package-manager-and-available-scripts, qualitygate-implement-cli-command-qualitygate-run, qualitygate-emit-quality-report-md-and-json-report, qualitygate-create-fixture-packages-with-pass-fail-scripts-for-testing, qualitygate-test-json-report-schema-validation
+- Depends on: qualitygate-detect-package-manager-and-available-scripts, qualitygate-implement-cli-command-qualitygate-run, qualitygate-emit-quality-report-md-and-json-report, qualitygate-exit-non-zero-if-required-checks-fail, qualitygate-add-fixture-packages-with-pass-fail-scripts-for-testing, qualitygate-test-json-report-schema
 - Can run concurrently with: qualitygate-add-github-actions-example-workflow
 - Dispatchable now: No
 - Blocked by: None
@@ -121,18 +140,18 @@ Wait for the whole wave to finish and pass verification before dispatching the n
 - Repo: qualitygate
 - Branch: agent/add-github-actions-example-workflow
 - Risk: low
-- Depends on: qualitygate-detect-package-manager-and-available-scripts, qualitygate-implement-cli-command-qualitygate-run, qualitygate-emit-quality-report-md-and-json-report, qualitygate-create-fixture-packages-with-pass-fail-scripts-for-testing, qualitygate-test-json-report-schema-validation
+- Depends on: qualitygate-detect-package-manager-and-available-scripts, qualitygate-implement-cli-command-qualitygate-run, qualitygate-emit-quality-report-md-and-json-report, qualitygate-exit-non-zero-if-required-checks-fail, qualitygate-add-fixture-packages-with-pass-fail-scripts-for-testing, qualitygate-test-json-report-schema
 - Can run concurrently with: qualitygate-write-readme-documentation
 - Dispatchable now: No
 - Blocked by: None
 
-### qualitygate-run-safe-checks-in-order-lint-typecheck-test-build: Run safe checks in order: lint, typecheck, test, build
+### qualitygate-run-safe-checks-in-order-if-present-lint-typecheck-test-build: Run safe checks in order if present: lint, typecheck, test, build
 
 - Phase: final_validation
 - Repo: qualitygate
-- Branch: agent/run-safe-checks-in-order-lint-typecheck-test-build
+- Branch: agent/run-safe-checks-in-order-if-present-lint-typecheck-test-build
 - Risk: high
-- Depends on: qualitygate-detect-package-manager-and-available-scripts, qualitygate-implement-cli-command-qualitygate-run, qualitygate-emit-quality-report-md-and-json-report, qualitygate-create-fixture-packages-with-pass-fail-scripts-for-testing, qualitygate-test-json-report-schema-validation, qualitygate-write-readme-documentation, qualitygate-add-github-actions-example-workflow
+- Depends on: qualitygate-detect-package-manager-and-available-scripts, qualitygate-implement-cli-command-qualitygate-run, qualitygate-emit-quality-report-md-and-json-report, qualitygate-exit-non-zero-if-required-checks-fail, qualitygate-add-fixture-packages-with-pass-fail-scripts-for-testing, qualitygate-test-json-report-schema, qualitygate-write-readme-documentation, qualitygate-add-github-actions-example-workflow
 - Can run concurrently with: None
 - Dispatchable now: No
 - Blocked by: approve high-risk scope before dispatch
