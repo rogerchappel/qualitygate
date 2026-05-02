@@ -1,6 +1,14 @@
 # qualitygate
 
-A tiny local-first quality gate for agent and maintainer handoffs. It detects common package scripts, runs the safe verification set in order, and writes Markdown/JSON reports that can be attached to PRs.
+A tiny local-first quality gate for agent and maintainer handoffs. It detects
+common package scripts, runs the safe verification set in order, and writes
+Markdown/JSON reports that can be attached to PRs.
+
+## Why this exists
+
+High-velocity agent workflows fall apart when "done" arrives without proof.
+`qualitygate` provides a small, repeatable readiness bar before work is handed
+to a reviewer or pushed into CI.
 
 ## Install
 
@@ -28,14 +36,16 @@ Run checks for another path:
 qualitygate run ../some-repo
 ```
 
-`qualitygate run` detects `package.json`, chooses the package manager from lockfiles or `packageManager`, and runs available scripts in this order:
+`qualitygate run` detects `package.json`, chooses the package manager from
+lockfiles or `packageManager`, and runs available scripts in this order:
 
 1. `lint`
 2. `typecheck`
 3. `test`
 4. `build`
 
-It does not install dependencies, auto-fix files, call remote services, or run destructive commands. It only runs scripts already defined by the target repo.
+It does not install dependencies, auto-fix files, call remote services, or run
+destructive commands. It only runs scripts already defined by the target repo.
 
 ## Reports
 
@@ -66,9 +76,23 @@ qualitygate run --no-write
 
 ## GitHub Actions example
 
-See [`.github/workflows/qualitygate-example.yml`](.github/workflows/qualitygate-example.yml) for a minimal workflow that runs QualityGate and uploads the reports as artifacts.
+See [`.github/workflows/qualitygate-example.yml`](.github/workflows/qualitygate-example.yml)
+for a minimal workflow that runs QualityGate and uploads the reports as
+artifacts.
 
-## Verify
+## Planned V1
+
+The scoped first version is intentionally small:
+
+- detect safe repo scripts such as lint, typecheck, test, and build
+- run checks in order when they exist
+- emit Markdown and JSON reports with command, exit code, duration, and summary
+- exit non-zero when required checks fail
+- stay local-first and avoid destructive actions
+
+See [docs/PRD.md](docs/PRD.md) for the V1 scope.
+
+## Verify this repository
 
 Run the local validation script before opening a pull request:
 
@@ -76,11 +100,15 @@ Run the local validation script before opening a pull request:
 bash scripts/validate.sh
 ```
 
-`scripts/validate.sh` runs the repository's standard local checks when they are defined and will also run `agent-qc ready` when `agent-qc` is installed. Missing `agent-qc` is treated as a skip, not a failure.
+## Safety and local-first notes
+
+`qualitygate` should make verification clearer, not more magical. Checks should
+stay deterministic, reviewable, and easy to audit.
 
 ## Contributing
 
-See [CONTRIBUTING.md](CONTRIBUTING.md) for contribution expectations. Changes should be small, reviewable, and verified before review.
+See [CONTRIBUTING.md](CONTRIBUTING.md) for contribution expectations. Changes
+should be small, reviewable, and verified before review.
 
 ## Security
 
