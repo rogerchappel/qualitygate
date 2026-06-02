@@ -1,118 +1,53 @@
 # qualitygate
 
-A tiny local-first quality gate for agent and maintainer handoffs. It detects
-common package scripts, runs the safe verification set in order, and writes
-Markdown/JSON reports that can be attached to PRs.
+qualitygate is an early-stage local-first developer tool.
 
-## Why this exists
+## Status
 
-High-velocity agent workflows fall apart when "done" arrives without proof.
-`qualitygate` provides a small, repeatable readiness bar before work is handed
-to a reviewer or pushed into CI.
+This repository is early-stage. The README now reflects the current project intent from `docs/PRD.md`, but behavior should still be treated as pre-1.0 until implementation, examples, and release checks mature.
 
-## Install
+## Install from a checkout
 
 ```sh
+git clone https://github.com/rogerchappel/qualitygate.git
+cd qualitygate
 npm install
-```
-
-For local development, run the CLI directly:
-
-```sh
-node cli/qualitygate.js --help
 ```
 
 ## Use
 
-Run checks in the current repository:
+Start by reading the product notes and running the local checks:
 
 ```sh
-qualitygate run
+sed -n '1,120p' docs/PRD.md
+npm test
 ```
 
-Run checks for another path:
+If you are evaluating the package contents before a release, run:
 
 ```sh
-qualitygate run ../some-repo
+npm test
 ```
 
-`qualitygate run` detects `package.json`, chooses the package manager from
-lockfiles or `packageManager`, and runs available scripts in this order:
-
-1. `lint`
-2. `typecheck`
-3. `test`
-4. `build`
-
-It does not install dependencies, auto-fix files, call remote services, or run
-destructive commands. It only runs scripts already defined by the target repo.
-
-## Reports
-
-By default, the command writes:
-
-- `QUALITY_REPORT.md`
-- `quality-report.json`
-
-Each check result includes:
-
-- script name
-- command
-- exit code
-- duration in milliseconds
-- short summary
-
-Use `--no-write` for a smoke run without report files:
+## Verification
 
 ```sh
-qualitygate run --no-write
+npm test
 ```
 
-## Exit codes
+## Limitations
 
-- `0`: all detected checks passed, or no checks were detected
-- `1`: one or more checks failed, or an unexpected error occurred
-- `2`: invalid command usage
-
-## GitHub Actions example
-
-See [`.github/workflows/qualitygate-example.yml`](.github/workflows/qualitygate-example.yml)
-for a minimal workflow that runs QualityGate and uploads the reports as
-artifacts.
-
-## Planned V1
-
-The scoped first version is intentionally small:
-
-- detect safe repo scripts such as lint, typecheck, test, and build
-- run checks in order when they exist
-- emit Markdown and JSON reports with command, exit code, duration, and summary
-- exit non-zero when required checks fail
-- stay local-first and avoid destructive actions
-
-See [docs/PRD.md](docs/PRD.md) for the V1 scope.
-
-## Verify this repository
-
-Run the local validation script before opening a pull request:
-
-```sh
-bash scripts/validate.sh
-```
-
-## Safety and local-first notes
-
-`qualitygate` should make verification clearer, not more magical. Checks should
-stay deterministic, reviewable, and easy to audit.
+- The package is still a v0.1.0 project and may not expose a finished CLI or public API yet.
+- Treat the PRD as direction, not a guarantee that every listed capability is implemented.
+- Do not use the package for production security, compliance, or release decisions until tests and examples cover that workflow.
 
 ## Contributing
 
-See [CONTRIBUTING.md](CONTRIBUTING.md) for contribution expectations. Changes
-should be small, reviewable, and verified before review.
+See [CONTRIBUTING.md](CONTRIBUTING.md). Keep changes small, update the PRD or README when scope changes, and include the exact verification command in every pull request.
 
 ## Security
 
-See [SECURITY.md](SECURITY.md) for vulnerability reporting guidance.
+See [SECURITY.md](SECURITY.md). Do not include secrets, private tokens, proprietary dependency data, or sensitive logs in public issues or examples.
 
 ## License
 
