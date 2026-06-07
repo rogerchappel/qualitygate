@@ -13,7 +13,9 @@
   "files": [
     "cli",
     "src",
-    "README.md"
+    "README.md",
+    "LICENSE",
+    "SECURITY.md"
   ],
   "scripts": {
     "test": "node --test"
@@ -23,6 +25,14 @@
     "verification",
     "agentic"
   ],
-  "author": "StackForge User",
-  "license": "MIT"
+  "author": "Roger Chappel",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/rogerchappel/qualitygate.git"
+  },
+  "bugs": {
+    "url": "https://github.com/rogerchappel/qualitygate/issues"
+  },
+  "homepage": "https://github.com/rogerchappel/qualitygate#readme"
 }
