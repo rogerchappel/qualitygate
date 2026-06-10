@@ -33,6 +33,12 @@ npx qualitygate --version
 Run the gate against the current checkout:
 
 ```sh
+npm run release:check
+```
+
+Run the CLI against a target repository:
+
+```sh
 npx qualitygate run .
 ```
 
