@@ -26,13 +26,16 @@ npm test
 If you are evaluating the package contents before a release, run:
 
 ```sh
-npm test
+npm run release:check
 ```
 
 ## Verification
 
 ```sh
 npm test
+npm run smoke
+npm run package:smoke
+npm run release:check
 ```
 
 ## Limitations
