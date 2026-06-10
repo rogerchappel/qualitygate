@@ -13,6 +13,7 @@
   "files": [
     "cli",
     "src",
+    "docs",
     "scripts",
     "README.md",
     "LICENSE",
@@ -21,10 +22,11 @@
     "CONTRIBUTING.md"
   ],
   "scripts": {
+    "check": "node --check cli/qualitygate.js && find src test -name '*.js' -print0 | xargs -0 -n1 node --check",
     "test": "node --test",
     "smoke": "bash scripts/smoke.sh",
     "package:smoke": "npm pack --dry-run",
-    "release:check": "npm test && npm run smoke && npm run package:smoke"
+    "release:check": "npm run check && npm test && npm run smoke && npm run package:smoke"
   },
   "keywords": [
     "quality-gate",

@@ -3,13 +3,17 @@ import { resolve } from 'node:path';
 import { createReport, detectProject, hasFailures, runChecks, writeReports } from '../src/index.js';
 
 function printHelp() {
-  console.log(`qualitygate\n\nUsage:\n  qualitygate run [path] [--no-write]\n  qualitygate --help\n\nCommands:\n  run   Detect and run safe package scripts in order: lint, typecheck, test, build\n\nReports:\n  QUALITY_REPORT.md and quality-report.json are written to the target repo by default.`);
+  console.log(`qualitygate\n\nUsage:\n  qualitygate run [path] [--no-write]\n  qualitygate --help\n  qualitygate --version\n\nCommands:\n  run   Detect and run safe package scripts in order: lint, typecheck, test, build\n\nReports:\n  QUALITY_REPORT.md and quality-report.json are written to the target repo by default.`);
 }
 
 async function main(argv) {
   const [command, maybePath, ...rest] = argv;
   if (!command || command === '--help' || command === '-h') {
     printHelp();
+    return 0;
+  }
+  if (command === '--version' || command === '-v') {
+    console.log('0.1.0');
     return 0;
   }
 

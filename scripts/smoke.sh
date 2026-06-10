@@ -15,6 +15,8 @@ JSON
 
 node cli/qualitygate.js --help >"$tmpdir/help.txt"
 grep -q "qualitygate run" "$tmpdir/help.txt"
+node cli/qualitygate.js --version >"$tmpdir/version.txt"
+grep -q "^0\\.1\\.0$" "$tmpdir/version.txt"
 
 node cli/qualitygate.js run "$tmpdir" >"$tmpdir/run.txt"
 grep -q "Detected checks: lint, test" "$tmpdir/run.txt"
