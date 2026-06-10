@@ -24,11 +24,11 @@ export function runScript({ repoDir, packageManager, scriptName }) {
 
     child.stdout.on('data', (chunk) => {
       output += chunk.toString();
-      process.stdout.write(chunk);
+      safeWrite(process.stdout, chunk);
     });
     child.stderr.on('data', (chunk) => {
       output += chunk.toString();
-      process.stderr.write(chunk);
+      safeWrite(process.stderr, chunk);
     });
     child.on('error', (error) => {
       const durationMs = Math.round(performance.now() - started);
@@ -78,4 +78,13 @@ function trimOutput(output) {
   const max = 12000;
   if (output.length <= max) return output;
   return `${output.slice(0, 6000)}\n...[output truncated]...\n${output.slice(-6000)}`;
+}
+
+function safeWrite(stream, chunk) {
+  if (stream.destroyed) return;
+  stream.write(chunk, (error) => {
+    if (error && error.code !== 'EPIPE') {
+      stream.emit('error', error);
+    }
+  });
 }

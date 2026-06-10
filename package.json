@@ -13,6 +13,7 @@
   "files": [
     "cli",
     "src",
+    "scripts",
     "README.md",
     "LICENSE",
     "SECURITY.md",
@@ -20,7 +21,10 @@
     "CONTRIBUTING.md"
   ],
   "scripts": {
-    "test": "node --test"
+    "test": "node --test",
+    "smoke": "bash scripts/smoke.sh",
+    "package:smoke": "npm pack --dry-run",
+    "release:check": "npm test && npm run smoke && npm run package:smoke"
   },
   "keywords": [
     "quality-gate",
