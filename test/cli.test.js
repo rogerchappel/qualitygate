@@ -13,6 +13,12 @@ test('CLI help includes qualitygate run', async () => {
   assert.match(result.stdout, /qualitygate run/);
 });
 
+test('CLI version prints package version', async () => {
+  const result = await runNode([CLI, '--version']);
+  assert.equal(result.code, 0);
+  assert.match(result.stdout, /^0\.1\.0\n$/);
+});
+
 test('qualitygate run executes scripts and writes reports', async () => {
   const dir = await mkdtemp(path.join(tmpdir(), 'qualitygate-pass-'));
   await writeFile(path.join(dir, 'package.json'), JSON.stringify({ scripts: { lint: 'node -e "console.log(\'lint ok\')"', test: 'node -e "console.log(\'test ok\')"' } }));
