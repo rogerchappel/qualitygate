@@ -1,88 +1,50 @@
 # qualitygate
 
-qualitygate is a local-first CLI for running a small, ordered verification gate
-against a repository and writing handoff-friendly reports.
+Quality gate definitions and orchestration notes for project checks.
 
-It detects package-manager scripts in this order:
+## Status
 
-1. `lint`
-2. `typecheck`
-3. `test`
-4. `build`
+This repository is currently a planning and scaffolding repo. It contains project governance, product notes, and release hygiene files, but it does not yet include the package implementation advertised by `package.json`. Treat it as not ready for installation or production use until `src/` and real usage examples land.
 
-The CLI runs only scripts that already exist in the target package and writes
-`QUALITY_REPORT.md` plus `quality-report.json` unless `--no-write` is passed.
+## Install
 
-## Install from a checkout
+There is no supported install path yet. For local stewardship or planning work, install dependencies only when a future implementation adds them:
 
 ```sh
-git clone https://github.com/rogerchappel/qualitygate.git
-cd qualitygate
 npm install
 ```
 
 ## Use
 
-Check the CLI surface:
+No runtime API or CLI is available yet. Start with the planning material in `docs/PRD.md` and `ROADMAP.md` before implementing package entry points.
+
+## Verify
+
+Run the available repository checks before opening a pull request:
 
 ```sh
-npx qualitygate --help
-npx qualitygate --version
-```
-
-Run the gate against the current checkout:
-
-```sh
-npm run release:check
-```
-
-Run the CLI against a target repository:
-
-```sh
-npx qualitygate run .
-```
-
-Preview a target without writing reports:
-
-```sh
-npx qualitygate run path/to/repo --no-write
-```
-
-For local development from this repository, use the checkout CLI directly:
-
-```sh
-node cli/qualitygate.js run . --no-write
-```
-
-## Verification
-
-```sh
-npm run check
 npm test
-npm run smoke
-npm run package:smoke
-npm run release:check
 ```
 
-`npm run release:check` is the release-candidate gate used by CI. It validates
-JavaScript syntax, runs the Node test suite, checks the CLI help/version smoke
-path, and performs an npm pack dry run.
+If `release:check` exists in `package.json`, run it as the broader release-readiness gate:
+
+```sh
+npm run release:check
+```
 
 ## Limitations
 
-- The package is still a v0.1.0 project; treat output as advisory evidence for
-  handoffs rather than a guarantee that a repository is production-ready.
-- Only JavaScript package-manager scripts are detected today.
-- The CLI executes existing package scripts in the target repository, so review
-  the target `package.json` before running it on untrusted code.
+- The package entry points are placeholders until an implementation is added.
+- README examples should be updated with real commands before any release claim is made.
+- Security and production posture should be reassessed after the first implementation lands.
 
 ## Contributing
 
-See [CONTRIBUTING.md](CONTRIBUTING.md). Keep changes small, update the PRD or README when scope changes, and include the exact verification command in every pull request.
+See [CONTRIBUTING.md](CONTRIBUTING.md) for contribution expectations. Changes should be small, reviewable, and verified before review.
 
 ## Security
 
-See [SECURITY.md](SECURITY.md). Do not include secrets, private tokens, proprietary dependency data, or sensitive logs in public issues or examples.
+See [SECURITY.md](SECURITY.md) for vulnerability reporting guidance.
 
 ## License
 
