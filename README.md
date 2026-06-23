@@ -32,6 +32,13 @@ If `release:check` exists in `package.json`, run it as the broader release-readi
 npm run release:check
 ```
 
+Run the metadata and package-surface audit on its own when changing
+`package.json`, workflows, or packed files:
+
+```sh
+npm run release:readiness
+```
+
 ## Limitations
 
 - The package entry points are placeholders until an implementation is added.
