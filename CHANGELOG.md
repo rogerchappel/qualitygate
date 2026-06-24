@@ -9,6 +9,8 @@ format and uses semantic versioning when versioned releases are published.
 
 ### Added
 
+- Documented the implemented CLI quickstart, report outputs, package-script
+  ordering, and v0.1 limitations.
 - Initial project setup.
 
 ## Release Links
