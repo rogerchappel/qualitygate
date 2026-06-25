@@ -1,22 +1,73 @@
 # qualitygate
 
-Quality gate definitions and orchestration notes for project checks.
+`qualitygate` is a local-first verification gate for repository handoffs.
+It detects common package scripts, runs them in a predictable order, and writes
+Markdown plus JSON reports that can be attached to a PR or agent handoff.
 
 ## Status
 
-This repository is currently a planning and scaffolding repo. It contains project governance, product notes, and release hygiene files, but it does not yet include the package implementation advertised by `package.json`. Treat it as not ready for installation or production use until `src/` and real usage examples land.
+The CLI is implemented and covered by fixture-backed tests. Treat v0.1 as a
+small package-script gate, not as a general CI replacement or auto-fixer.
 
 ## Install
 
-There is no supported install path yet. For local stewardship or planning work, install dependencies only when a future implementation adds them:
+Install dependencies for local development:
 
 ```sh
 npm install
 ```
 
-## Use
+During development, run the CLI directly:
 
-No runtime API or CLI is available yet. Start with the planning material in `docs/PRD.md` and `ROADMAP.md` before implementing package entry points.
+```sh
+node cli/qualitygate.js --help
+```
+
+After publishing or linking the package, use the bin:
+
+```sh
+qualitygate --help
+```
+
+## Quick Start
+
+Run the gate against the current repository:
+
+```sh
+qualitygate run
+```
+
+Run it against another repository:
+
+```sh
+qualitygate run ../some-project
+```
+
+By default, `qualitygate run` writes two handoff artifacts in the target
+repository:
+
+- `QUALITY_REPORT.md`
+- `quality-report.json`
+
+Use `--no-write` when you only want console output and an exit code:
+
+```sh
+qualitygate run ../some-project --no-write
+```
+
+## What It Checks
+
+`qualitygate` detects `package.json` and chooses the package manager from
+lockfiles or the `packageManager` field. It runs available scripts in this
+order:
+
+1. `lint`
+2. `typecheck`
+3. `test`
+4. `build`
+
+Missing scripts are skipped. Any failed detected check makes the CLI exit
+non-zero.
 
 ## Verify
 
@@ -41,9 +92,11 @@ npm run release:readiness
 
 ## Limitations
 
-- The package entry points are placeholders until an implementation is added.
-- README examples should be updated with real commands before any release claim is made.
-- Security and production posture should be reassessed after the first implementation lands.
+- Only JavaScript package repositories are detected in v0.1.
+- The script order is fixed to `lint`, `typecheck`, `test`, then `build`.
+- The tool does not auto-install dependencies, auto-fix failures, or run
+  destructive commands.
+- Generated reports may include local filesystem paths from the target machine.
 
 ## Contributing
 
