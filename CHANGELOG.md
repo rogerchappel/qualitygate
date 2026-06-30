@@ -11,6 +11,8 @@ format and uses semantic versioning when versioned releases are published.
 
 - Documented the implemented CLI quickstart, report outputs, package-script
   ordering, and v0.1 limitations.
+- Added assertion-backed package smoke coverage for CLI, library, docs, and
+  support files.
 - Initial project setup.
 
 ## Release Links

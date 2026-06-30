@@ -90,6 +90,16 @@ Run the metadata and package-surface audit on its own when changing
 npm run release:readiness
 ```
 
+Run package smoke when changing the CLI, library entrypoints, docs, or support
+files:
+
+```sh
+npm run package:smoke
+```
+
+It verifies the dry-run tarball includes the CLI, library modules, docs,
+license, changelog, security policy, and contributing guide.
+
 ## Limitations
 
 - Only JavaScript package repositories are detected in v0.1.
