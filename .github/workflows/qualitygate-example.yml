@@ -15,7 +15,7 @@ jobs:
         with:
           node-version: '22'
       - run: npm ci
-      - run: npx qualitygate run
+      - run: npm exec -- qualitygate run
       - uses: actions/upload-artifact@v6
         if: always()
         with:
