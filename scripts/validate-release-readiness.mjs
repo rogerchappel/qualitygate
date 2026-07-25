@@ -3,6 +3,7 @@ import path from 'node:path';
 
 const root = process.cwd();
 const packagePath = path.join(root, 'package.json');
+const lockPath = path.join(root, 'package-lock.json');
 const packageJson = JSON.parse(fs.readFileSync(packagePath, 'utf8'));
 const scripts = packageJson.scripts ?? {};
 const failures = [];
@@ -15,6 +16,22 @@ requireField(packageJson.repository, 'package.json must declare repository metad
 requireField(Array.isArray(packageJson.files) && packageJson.files.length > 0, 'package.json must declare a non-empty files allowlist');
 requireField(scripts['package:smoke'], 'package.json scripts must include package:smoke');
 requireField(scripts['release:check'], 'package.json scripts must include release:check');
+requireField(fs.existsSync(lockPath), 'repository must include package-lock.json');
+
+if (fs.existsSync(lockPath)) {
+  const packageLock = JSON.parse(fs.readFileSync(lockPath, 'utf8'));
+  const lockedRoot = packageLock.packages?.[''] ?? {};
+  const dependencyFields = ['dependencies', 'devDependencies', 'optionalDependencies', 'peerDependencies'];
+
+  for (const field of dependencyFields) {
+    const declared = packageJson[field] ?? {};
+    const locked = lockedRoot[field] ?? {};
+    requireField(
+      JSON.stringify(declared) === JSON.stringify(locked),
+      `package-lock.json root ${field} must match package.json`
+    );
+  }
+}
 
 const workflowDir = path.join(root, '.github', 'workflows');
 if (fs.existsSync(workflowDir)) {
