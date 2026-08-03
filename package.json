@@ -1,5 +1,5 @@
 {
-  "name": "qualitygate",
+  "name": "@rogerchappel/qualitygate",
   "version": "0.1.0",
   "description": "Local-first verification gate for repository handoffs.",
   "type": "module",

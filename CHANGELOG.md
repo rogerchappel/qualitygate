@@ -7,6 +7,11 @@ format and uses semantic versioning when versioned releases are published.
 
 ## [Unreleased]
 
+### Changed
+
+- Adopted the publishable `@rogerchappel/qualitygate` npm package identity
+  while preserving `qualitygate` as the CLI executable name.
+
 ### Added
 
 - Documented the implemented CLI quickstart, report outputs, package-script

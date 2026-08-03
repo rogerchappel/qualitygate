@@ -11,22 +11,20 @@ small package-script gate, not as a general CI replacement or auto-fixer.
 
 ## Install
 
-Install dependencies for local development:
+Install the published package globally. The scoped package keeps the shorter
+`qualitygate` executable name:
 
 ```sh
-npm install
-```
-
-During development, run the CLI directly:
-
-```sh
-node cli/qualitygate.js --help
-```
-
-After publishing or linking the package, use the bin:
-
-```sh
+npm install --global @rogerchappel/qualitygate
 qualitygate --help
+```
+
+For local development, install the locked dependencies and run the CLI
+directly:
+
+```sh
+npm ci
+node cli/qualitygate.js --help
 ```
 
 ## Quick Start
