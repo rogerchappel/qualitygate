@@ -3,7 +3,7 @@ import { resolve } from 'node:path';
 import { createReport, detectProject, hasFailures, runChecks, writeReports } from '../src/index.js';
 
 function printHelp() {
-  console.log(`qualitygate\n\nUsage:\n  qualitygate run [path] [--no-write]\n  qualitygate --help\n  qualitygate --version\n\nCommands:\n  run   Detect and run safe package scripts in order: lint, typecheck, test, build\n\nReports:\n  QUALITY_REPORT.md and quality-report.json are written to the target repo by default.`);
+  console.log(`qualitygate\n\nUsage:\n  qualitygate run [path] [--no-write]\n  qualitygate run [--no-write] [path]\n  qualitygate --help\n  qualitygate --version\n\nCommands:\n  run   Detect and run safe package scripts in order: lint, typecheck, test, build\n\nOptions:\n  --no-write   Run checks without writing report files\n\nThe run command accepts at most one path and one --no-write option.\n\nReports:\n  QUALITY_REPORT.md and quality-report.json are written to the target repo by default.`);
 }
 
 function parseRunArguments(args) {
