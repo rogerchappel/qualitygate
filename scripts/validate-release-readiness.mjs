@@ -37,8 +37,11 @@ if (fs.existsSync(lockPath)) {
   requireField(packageLock.name === packageJson.name, 'package-lock.json name must match package.json');
   requireField(lockedRoot.name === packageJson.name, 'package-lock.json root name must match package.json');
   requireField(lockedRoot.version === packageJson.version, 'package-lock.json root version must match package.json');
+  const normalizedBin = Object.fromEntries(
+    Object.entries(packageJson.bin ?? {}).map(([name, target]) => [name, target.replace(/^\.\//, '')])
+  );
   requireField(
-    JSON.stringify(lockedRoot.bin ?? {}) === JSON.stringify(packageJson.bin ?? {}),
+    JSON.stringify(lockedRoot.bin ?? {}) === JSON.stringify(normalizedBin),
     'package-lock.json root bin must match package.json'
   );
 }

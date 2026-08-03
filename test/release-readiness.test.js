@@ -92,3 +92,20 @@ test('release readiness rejects stale locked package metadata', async () => {
   assert.match(output, /root version must match package\.json/);
   assert.match(output, /root bin must match package\.json/);
 });
+
+test('release readiness accepts npm-normalized bin metadata', async () => {
+  const packageLock = {
+    name: requiredPackageFields.name,
+    lockfileVersion: 3,
+    packages: {
+      '': {
+        name: requiredPackageFields.name,
+        version: requiredPackageFields.version,
+        bin: { qualitygate: 'cli/qualitygate.js' }
+      }
+    }
+  };
+
+  const output = await runValidator(requiredPackageFields, packageLock);
+  assert.equal(output, '');
+});
