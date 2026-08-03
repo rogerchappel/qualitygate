@@ -53,6 +53,16 @@ Use `--no-write` when you only want console output and an exit code:
 qualitygate run ../some-project --no-write
 ```
 
+The option can also precede the path:
+
+```sh
+qualitygate run --no-write ../some-project
+```
+
+The `run` command accepts at most one repository path and one exact
+`--no-write` option. Unknown options, duplicate options, and extra paths are
+usage errors; no checks run and no reports are written for those invocations.
+
 ## What It Checks
 
 `qualitygate` detects `package.json` and chooses the package manager from

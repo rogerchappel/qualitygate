@@ -3,7 +3,27 @@ import { resolve } from 'node:path';
 import { createReport, detectProject, hasFailures, runChecks, writeReports } from '../src/index.js';
 
 function printHelp() {
-  console.log(`qualitygate\n\nUsage:\n  qualitygate run [path] [--no-write]\n  qualitygate --help\n  qualitygate --version\n\nCommands:\n  run   Detect and run safe package scripts in order: lint, typecheck, test, build\n\nReports:\n  QUALITY_REPORT.md and quality-report.json are written to the target repo by default.`);
+  console.log(`qualitygate\n\nUsage:\n  qualitygate run [path] [--no-write]\n  qualitygate run [--no-write] [path]\n  qualitygate --help\n  qualitygate --version\n\nCommands:\n  run   Detect and run safe package scripts in order: lint, typecheck, test, build\n\nOptions:\n  --no-write   Run checks without writing report files\n\nThe run command accepts at most one path and one --no-write option.\n\nReports:\n  QUALITY_REPORT.md and quality-report.json are written to the target repo by default.`);
+}
+
+function parseRunArguments(args) {
+  let noWrite = false;
+  let target;
+
+  for (const argument of args) {
+    if (argument === '--no-write') {
+      if (noWrite) throw new Error('duplicate --no-write option');
+      noWrite = true;
+    } else if (argument.startsWith('-')) {
+      throw new Error(`unknown option ${argument}`);
+    } else if (target !== undefined) {
+      throw new Error(`unexpected path ${argument}`);
+    } else {
+      target = argument;
+    }
+  }
+
+  return { noWrite, target: target ?? process.cwd() };
 }
 
 async function main(argv) {
@@ -23,8 +43,16 @@ async function main(argv) {
     return 2;
   }
 
-  const noWrite = argv.includes('--no-write');
-  const target = maybePath && !maybePath.startsWith('-') ? maybePath : process.cwd();
+  let runArguments;
+  try {
+    runArguments = parseRunArguments([maybePath, ...rest].filter((argument) => argument !== undefined));
+  } catch (error) {
+    console.error(`Invalid arguments for run: ${error.message}`);
+    printHelp();
+    return 2;
+  }
+
+  const { noWrite, target } = runArguments;
   const repoDir = resolve(target);
   const detection = await detectProject(repoDir);
 
