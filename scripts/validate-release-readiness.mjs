@@ -13,6 +13,8 @@ function requireField(condition, message) {
 }
 
 requireField(packageJson.repository, 'package.json must declare repository metadata');
+requireField(packageJson.name === '@rogerchappel/qualitygate', 'package.json must use the publishable @rogerchappel/qualitygate name');
+requireField(packageJson.bin?.qualitygate === './cli/qualitygate.js', 'package.json must map the qualitygate bin to ./cli/qualitygate.js');
 requireField(Array.isArray(packageJson.files) && packageJson.files.length > 0, 'package.json must declare a non-empty files allowlist');
 requireField(scripts['package:smoke'], 'package.json scripts must include package:smoke');
 requireField(scripts['release:check'], 'package.json scripts must include release:check');
@@ -31,6 +33,14 @@ if (fs.existsSync(lockPath)) {
       `package-lock.json root ${field} must match package.json`
     );
   }
+
+  requireField(packageLock.name === packageJson.name, 'package-lock.json name must match package.json');
+  requireField(lockedRoot.name === packageJson.name, 'package-lock.json root name must match package.json');
+  requireField(lockedRoot.version === packageJson.version, 'package-lock.json root version must match package.json');
+  requireField(
+    JSON.stringify(lockedRoot.bin ?? {}) === JSON.stringify(packageJson.bin ?? {}),
+    'package-lock.json root bin must match package.json'
+  );
 }
 
 const workflowDir = path.join(root, '.github', 'workflows');

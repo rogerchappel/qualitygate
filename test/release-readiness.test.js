@@ -7,6 +7,9 @@ import test from 'node:test';
 
 const VALIDATOR = new URL('../scripts/validate-release-readiness.mjs', import.meta.url).pathname;
 const requiredPackageFields = {
+  name: '@rogerchappel/qualitygate',
+  version: '0.1.0',
+  bin: { qualitygate: './cli/qualitygate.js' },
   repository: 'https://example.test/qualitygate',
   files: ['src'],
   scripts: {
@@ -49,4 +52,43 @@ test('release readiness rejects stale root dependency metadata', async () => {
 
   const output = await runValidator(packageJson, packageLock);
   assert.match(output, /package-lock\.json root dependencies must match package\.json/);
+});
+
+test('release readiness rejects conflicting package and bin identities', async () => {
+  const packageJson = {
+    ...requiredPackageFields,
+    name: 'qualitygate'
+  };
+  const packageLock = {
+    name: 'qualitygate',
+    lockfileVersion: 3,
+    packages: {
+      '': {
+        name: 'qualitygate',
+        version: packageJson.version,
+        bin: packageJson.bin
+      }
+    }
+  };
+
+  const output = await runValidator(packageJson, packageLock);
+  assert.match(output, /must use the publishable @rogerchappel\/qualitygate name/);
+});
+
+test('release readiness rejects stale locked package metadata', async () => {
+  const packageLock = {
+    name: requiredPackageFields.name,
+    lockfileVersion: 3,
+    packages: {
+      '': {
+        name: requiredPackageFields.name,
+        version: '0.0.9',
+        bin: { other: './cli/qualitygate.js' }
+      }
+    }
+  };
+
+  const output = await runValidator(requiredPackageFields, packageLock);
+  assert.match(output, /root version must match package\.json/);
+  assert.match(output, /root bin must match package\.json/);
 });
