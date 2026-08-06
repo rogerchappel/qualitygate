@@ -58,6 +58,26 @@ if (fs.existsSync(workflowDir)) {
 
   const combined = workflowFiles.map((file) => fs.readFileSync(path.join(workflowDir, file), 'utf8')).join('\n');
   requireField(/release:check/.test(combined), 'CI workflows must run npm run release:check');
+
+  const releasePath = path.join(workflowDir, 'release.yml');
+  requireField(fs.existsSync(releasePath), 'repository must include .github/workflows/release.yml');
+  if (fs.existsSync(releasePath)) {
+    const release = fs.readFileSync(releasePath, 'utf8');
+    const releaseRequirements = [
+      [/tags:\s*\n\s*- ['"]v\*['"]/, 'release workflow must run for v* tags'],
+      [/workflow_dispatch:/, 'release workflow must provide manual recovery'],
+      [/id-token:\s*write/, 'release workflow must grant OIDC id-token write permission'],
+      [/npm ci/, 'release workflow must use npm ci'],
+      [/npm run release:check/, 'release workflow must run npm run release:check'],
+      [/npm publish --access public --provenance/, 'release workflow must publish publicly with provenance'],
+      [/npm pack --json/, 'release workflow must pack the release artifact'],
+      [/npm view [^\n]*steps\.version\.outputs\.version/, 'release workflow must check the exact npm version'],
+      [/gh release (?:view|create)/, 'release workflow must manage a GitHub release']
+    ];
+    for (const [pattern, message] of releaseRequirements) {
+      requireField(pattern.test(release), message);
+    }
+  }
 }
 
 if (failures.length > 0) {
