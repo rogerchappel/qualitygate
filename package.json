@@ -43,5 +43,9 @@
   "bugs": {
     "url": "https://github.com/rogerchappel/qualitygate/issues"
   },
-  "homepage": "https://github.com/rogerchappel/qualitygate#readme"
+  "homepage": "https://github.com/rogerchappel/qualitygate#readme",
+  "publishConfig": {
+    "access": "public",
+    "provenance": true
+  }
 }

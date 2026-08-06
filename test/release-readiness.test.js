@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { execFileSync } from 'node:child_process';
-import { mkdtemp, writeFile } from 'node:fs/promises';
+import { mkdir, mkdtemp, readFile, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 import test from 'node:test';
@@ -18,11 +18,16 @@ const requiredPackageFields = {
   }
 };
 
-async function runValidator(packageJson, packageLock) {
+async function runValidator(packageJson, packageLock, releaseWorkflow) {
   const dir = await mkdtemp(path.join(tmpdir(), 'qualitygate-readiness-'));
   await writeFile(path.join(dir, 'package.json'), JSON.stringify(packageJson));
   if (packageLock) {
     await writeFile(path.join(dir, 'package-lock.json'), JSON.stringify(packageLock));
+  }
+  if (releaseWorkflow !== undefined) {
+    const workflowDir = path.join(dir, '.github', 'workflows');
+    await mkdir(workflowDir, { recursive: true });
+    await writeFile(path.join(workflowDir, 'release.yml'), releaseWorkflow);
   }
 
   try {
@@ -108,4 +113,31 @@ test('release readiness accepts npm-normalized bin metadata', async () => {
 
   const output = await runValidator(requiredPackageFields, packageLock);
   assert.equal(output, '');
+});
+
+test('release readiness accepts the repository release workflow', async () => {
+  const packageJson = JSON.parse(await readFile(new URL('../package.json', import.meta.url), 'utf8'));
+  const packageLock = JSON.parse(await readFile(new URL('../package-lock.json', import.meta.url), 'utf8'));
+  const workflow = await readFile(new URL('../.github/workflows/release.yml', import.meta.url), 'utf8');
+
+  const output = await runValidator(packageJson, packageLock, workflow);
+  assert.equal(output, '');
+});
+
+test('release readiness rejects a workflow without trusted publishing', async () => {
+  const packageLock = {
+    name: requiredPackageFields.name,
+    lockfileVersion: 3,
+    packages: {
+      '': {
+        name: requiredPackageFields.name,
+        version: requiredPackageFields.version,
+        bin: { qualitygate: 'cli/qualitygate.js' }
+      }
+    }
+  };
+
+  const output = await runValidator(requiredPackageFields, packageLock, 'name: Release\non:\n  workflow_dispatch:\n');
+  assert.match(output, /OIDC id-token write permission/);
+  assert.match(output, /publish publicly with provenance/);
 });

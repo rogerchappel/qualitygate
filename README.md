@@ -11,13 +11,17 @@ small package-script gate, not as a general CI replacement or auto-fixer.
 
 ## Install
 
-Install the published package globally. The scoped package keeps the shorter
-`qualitygate` executable name:
+The npm package is not published yet. To try the current development version
+before the first release, install the source from the repository's `main`
+branch; the scoped package keeps the shorter `qualitygate` executable name:
 
 ```sh
-npm install --global @rogerchappel/qualitygate
+npm install --global github:rogerchappel/qualitygate#main
 qualitygate --help
 ```
+
+After `@rogerchappel/qualitygate@0.1.0` is published, the supported registry
+install will be `npm install --global @rogerchappel/qualitygate`.
 
 For local development, install the locked dependencies and run the CLI
 directly:
