@@ -14,7 +14,8 @@ const requiredPackageFields = {
   files: ['src'],
   scripts: {
     'package:smoke': 'true',
-    'release:check': 'true'
+    'release:check': 'npm run release:readiness',
+    'release:readiness': 'node scripts/validate-release-readiness.mjs'
   }
 };
 
@@ -129,6 +130,16 @@ test('release check includes readiness without recursive invocation', async () =
 
   assert.match(packageJson.scripts['release:check'], /(?:^|&&\s*)npm run release:readiness(?:\s*&&|$)/);
   assert.doesNotMatch(packageJson.scripts['release:readiness'], /npm run release:check/);
+});
+
+test('release readiness rejects a release check that bypasses readiness', async () => {
+  const packageJson = {
+    ...requiredPackageFields,
+    scripts: { ...requiredPackageFields.scripts, 'release:check': 'npm test' }
+  };
+
+  const output = await runValidator(packageJson);
+  assert.match(output, /release:check must run release:readiness/);
 });
 
 test('release workflow delegates readiness to the release check', async () => {

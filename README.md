@@ -89,14 +89,16 @@ Run the available repository checks before opening a pull request:
 npm test
 ```
 
-If `release:check` exists in `package.json`, run it as the broader release-readiness gate:
+Run the complete release gate, which starts with the metadata and workflow
+readiness audit before exercising syntax, tests, smoke checks, and the packed
+package:
 
 ```sh
 npm run release:check
 ```
 
-Run the metadata and package-surface audit on its own when changing
-`package.json`, workflows, or packed files:
+Run only the metadata and workflow readiness audit when changing
+`package.json` or release workflows:
 
 ```sh
 npm run release:readiness
