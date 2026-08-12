@@ -18,6 +18,14 @@ requireField(packageJson.bin?.qualitygate === './cli/qualitygate.js', 'package.j
 requireField(Array.isArray(packageJson.files) && packageJson.files.length > 0, 'package.json must declare a non-empty files allowlist');
 requireField(scripts['package:smoke'], 'package.json scripts must include package:smoke');
 requireField(scripts['release:check'], 'package.json scripts must include release:check');
+requireField(
+  /(?:^|&&\s*)npm run release:readiness(?:\s*&&|$)/.test(scripts['release:check'] ?? ''),
+  'package.json release:check must run release:readiness'
+);
+requireField(
+  !/npm run release:check/.test(scripts['release:readiness'] ?? ''),
+  'package.json release:readiness must not invoke release:check recursively'
+);
 requireField(fs.existsSync(lockPath), 'repository must include package-lock.json');
 
 if (fs.existsSync(lockPath)) {

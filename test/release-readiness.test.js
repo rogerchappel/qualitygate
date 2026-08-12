@@ -14,7 +14,8 @@ const requiredPackageFields = {
   files: ['src'],
   scripts: {
     'package:smoke': 'true',
-    'release:check': 'true'
+    'release:check': 'npm run release:readiness',
+    'release:readiness': 'node scripts/validate-release-readiness.mjs'
   }
 };
 
@@ -122,6 +123,30 @@ test('release readiness accepts the repository release workflow', async () => {
 
   const output = await runValidator(packageJson, packageLock, workflow);
   assert.equal(output, '');
+});
+
+test('release check includes readiness without recursive invocation', async () => {
+  const packageJson = JSON.parse(await readFile(new URL('../package.json', import.meta.url), 'utf8'));
+
+  assert.match(packageJson.scripts['release:check'], /(?:^|&&\s*)npm run release:readiness(?:\s*&&|$)/);
+  assert.doesNotMatch(packageJson.scripts['release:readiness'], /npm run release:check/);
+});
+
+test('release readiness rejects a release check that bypasses readiness', async () => {
+  const packageJson = {
+    ...requiredPackageFields,
+    scripts: { ...requiredPackageFields.scripts, 'release:check': 'npm test' }
+  };
+
+  const output = await runValidator(packageJson);
+  assert.match(output, /release:check must run release:readiness/);
+});
+
+test('release workflow delegates readiness to the release check', async () => {
+  const workflow = await readFile(new URL('../.github/workflows/release.yml', import.meta.url), 'utf8');
+
+  assert.match(workflow, /run:\s*npm run release:check/);
+  assert.doesNotMatch(workflow, /run:\s*npm run release:readiness/);
 });
 
 test('release readiness rejects a workflow without trusted publishing', async () => {
