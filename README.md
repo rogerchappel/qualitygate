@@ -69,8 +69,12 @@ usage errors; no checks run and no reports are written for those invocations.
 
 ## What It Checks
 
-`qualitygate` detects `package.json` and chooses the package manager from
-lockfiles or the `packageManager` field. It runs available scripts in this
+`qualitygate` detects `package.json` and chooses the package manager from its
+supported `packageManager` field (`npm`, `pnpm`, `yarn`, or `bun`) when present.
+That explicit declaration takes precedence over lockfiles. Without a supported
+declaration, a single package-manager lockfile selects the manager; conflicting
+lockfiles stop the run with a diagnostic so the wrong manager is never invoked.
+With neither signal, npm remains the default. It runs available scripts in this
 order:
 
 1. `lint`

@@ -20,10 +20,6 @@ async function exists(filePath) {
 }
 
 export async function detectPackageManager(repoDir = process.cwd()) {
-  for (const [manager, lockfile] of LOCKFILES) {
-    if (await exists(path.join(repoDir, lockfile))) return manager;
-  }
-
   const packageJsonPath = path.join(repoDir, 'package.json');
   const raw = await readFile(packageJsonPath, 'utf8');
   const pkg = JSON.parse(raw);
@@ -31,6 +27,21 @@ export async function detectPackageManager(repoDir = process.cwd()) {
     const [manager] = pkg.packageManager.split('@');
     if (['npm', 'pnpm', 'yarn', 'bun'].includes(manager)) return manager;
   }
+
+  const detected = [];
+  for (const [manager, lockfile] of LOCKFILES) {
+    if (await exists(path.join(repoDir, lockfile))) detected.push({ manager, lockfile });
+  }
+
+  const managers = [...new Set(detected.map(({ manager }) => manager))];
+  if (managers.length > 1) {
+    const signals = detected.map(({ manager, lockfile }) => `${lockfile} (${manager})`).join(', ');
+    throw new Error(
+      `Conflicting package manager lockfiles: ${signals}. ` +
+      'Remove stale lockfiles or set package.json#packageManager to the intended npm, pnpm, yarn, or bun version.'
+    );
+  }
+  if (managers.length === 1) return managers[0];
 
   return 'npm';
 }

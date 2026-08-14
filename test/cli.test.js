@@ -92,6 +92,21 @@ test('qualitygate run rejects malformed arguments before executing scripts', asy
   await assert.rejects(access(path.join(dir, 'quality-report.json')));
 });
 
+test('qualitygate run reports conflicting lockfiles before executing a script', async () => {
+  const dir = await mkdtemp(path.join(tmpdir(), 'qualitygate-manager-conflict-'));
+  const marker = path.join(dir, 'script-ran');
+  await writeFile(path.join(dir, 'package.json'), JSON.stringify({ scripts: { test: `node -e "require('node:fs').writeFileSync('${marker}', '')"` } }));
+  await writeFile(path.join(dir, 'package-lock.json'), '');
+  await writeFile(path.join(dir, 'yarn.lock'), '');
+
+  const result = await runNode([CLI, 'run', dir, '--no-write']);
+
+  assert.equal(result.code, 1);
+  assert.match(result.stderr, /Conflicting package manager lockfiles:/);
+  assert.match(result.stderr, /set package\.json#packageManager/);
+  await assert.rejects(access(marker));
+});
+
 function runNode(args) {
   return new Promise((resolve) => {
     const child = spawn(process.execPath, args, { stdio: ['ignore', 'pipe', 'pipe'] });
