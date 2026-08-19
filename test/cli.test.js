@@ -6,6 +6,7 @@ import { tmpdir } from 'node:os';
 import path from 'node:path';
 
 const CLI = new URL('../cli/qualitygate.js', import.meta.url).pathname;
+const PACKAGE = JSON.parse(await readFile(new URL('../package.json', import.meta.url), 'utf8'));
 
 test('CLI help includes qualitygate run', async () => {
   const result = await runNode([CLI, '--help']);
@@ -16,7 +17,7 @@ test('CLI help includes qualitygate run', async () => {
 test('CLI version prints package version', async () => {
   const result = await runNode([CLI, '--version']);
   assert.equal(result.code, 0);
-  assert.match(result.stdout, /^0\.1\.0\n$/);
+  assert.equal(result.stdout, `${PACKAGE.version}\n`);
 });
 
 test('qualitygate run executes scripts and writes reports', async () => {
