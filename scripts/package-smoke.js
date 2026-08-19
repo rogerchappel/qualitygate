@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { execFileSync } from 'node:child_process';
-import { mkdtempSync, readFileSync, rmSync } from 'node:fs';
+import { cpSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 
@@ -50,9 +50,43 @@ try {
     encoding: 'utf8'
   });
   assert.match(help, /qualitygate run/);
+
+  const version = execFileSync(path.join(installRoot, 'node_modules', '.bin', 'qualitygate'), ['--version'], {
+    encoding: 'utf8'
+  });
+  assert.equal(version, `${expected.version}\n`);
 } finally {
   rmSync(installRoot, { recursive: true, force: true });
   rmSync(pack.filename, { force: true });
 }
 
-console.log(`package smoke ok: ${pack.filename} includes ${pack.files.length} files and installs the qualitygate CLI`);
+const versionFixtureRoot = mkdtempSync(path.join(tmpdir(), 'qualitygate-version-fixture-'));
+const fixtureVersion = '9.8.7-test.1';
+
+try {
+  for (const entry of ['cli', 'src', 'docs', 'scripts', 'README.md', 'LICENSE', 'SECURITY.md', 'CHANGELOG.md', 'CONTRIBUTING.md']) {
+    cpSync(entry, path.join(versionFixtureRoot, entry), { recursive: true });
+  }
+  writeFileSync(
+    path.join(versionFixtureRoot, 'package.json'),
+    `${JSON.stringify({ ...expected, version: fixtureVersion }, null, 2)}\n`
+  );
+
+  const fixturePackOutput = execFileSync('npm', ['pack', '--json'], {
+    cwd: versionFixtureRoot,
+    encoding: 'utf8'
+  });
+  const [fixturePack] = JSON.parse(fixturePackOutput);
+  const fixtureInstallRoot = path.join(versionFixtureRoot, 'install');
+  execFileSync('npm', ['install', '--prefix', fixtureInstallRoot, '--ignore-scripts', path.join(versionFixtureRoot, fixturePack.filename)], {
+    encoding: 'utf8',
+    stdio: 'pipe'
+  });
+  const fixtureCli = path.join(fixtureInstallRoot, 'node_modules', '.bin', 'qualitygate');
+  const fixtureCliVersion = execFileSync(fixtureCli, ['--version'], { encoding: 'utf8' });
+  assert.equal(fixtureCliVersion, `${fixtureVersion}\n`);
+} finally {
+  rmSync(versionFixtureRoot, { recursive: true, force: true });
+}
+
+console.log(`package smoke ok: ${pack.filename} includes ${pack.files.length} files and installed CLIs derive their manifest version`);
