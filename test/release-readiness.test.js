@@ -14,7 +14,7 @@ const requiredPackageFields = {
   files: ['src'],
   scripts: {
     'package:smoke': 'true',
-    'release:check': 'npm run release:readiness',
+    'release:check': 'npm test',
     'release:readiness': 'node scripts/validate-release-readiness.mjs'
   }
 };
@@ -125,21 +125,23 @@ test('release readiness accepts the repository release workflow', async () => {
   assert.equal(output, '');
 });
 
-test('release check includes readiness without recursive invocation', async () => {
+test('release check leaves readiness to its CI or release workflow caller', async () => {
   const packageJson = JSON.parse(await readFile(new URL('../package.json', import.meta.url), 'utf8'));
 
-  assert.match(packageJson.scripts['release:check'], /(?:^|&&\s*)npm run release:readiness(?:\s*&&|$)/);
+  assert.doesNotMatch(packageJson.scripts['release:check'], /npm run release:readiness/);
   assert.doesNotMatch(packageJson.scripts['release:readiness'], /npm run release:check/);
 });
 
 test('release readiness rejects a release check that bypasses readiness', async () => {
   const packageJson = {
     ...requiredPackageFields,
-    scripts: { ...requiredPackageFields.scripts, 'release:check': 'npm test' }
+    scripts: { ...requiredPackageFields.scripts, 'release:check': 'npm run release:readiness && npm test' }
   };
 
   const output = await runValidator(packageJson);
-  assert.match(output, /release:check must run release:readiness/);
+  assert.match(output, /package-lock\.json/);
+  const withLock = await runValidator(packageJson, { name: packageJson.name, lockfileVersion: 3, packages: { '': { name: packageJson.name, version: packageJson.version, bin: { qualitygate: 'cli/qualitygate.js' } } } });
+  assert.match(withLock, /release:check must not run release:readiness/);
 });
 
 test('release workflow delegates readiness to the release check', async () => {

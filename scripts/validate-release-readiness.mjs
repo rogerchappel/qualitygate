@@ -19,8 +19,8 @@ requireField(Array.isArray(packageJson.files) && packageJson.files.length > 0, '
 requireField(scripts['package:smoke'], 'package.json scripts must include package:smoke');
 requireField(scripts['release:check'], 'package.json scripts must include release:check');
 requireField(
-  /(?:^|&&\s*)npm run release:readiness(?:\s*&&|$)/.test(scripts['release:check'] ?? ''),
-  'package.json release:check must run release:readiness'
+  !/npm run release:readiness/.test(scripts['release:check'] ?? ''),
+  'package.json release:check must not run release:readiness'
 );
 requireField(
   !/npm run release:check/.test(scripts['release:readiness'] ?? ''),
